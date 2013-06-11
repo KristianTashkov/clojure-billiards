@@ -1,9 +1,7 @@
 (ns billiards.core
-  (:use [clojure.tools.namespace.repl :only (refresh)])
+  (:use [clojure.tools.namespace.repl :only (refresh)]
+    [billiards.gui.main :only [start-game board-height board-width]])
   (:gen-class))
-
-(def board-width 650)
-(def board-height 325)
 
 (defn get-initial-borders []
   [{:start [0 0] :end [0 board-height]}
