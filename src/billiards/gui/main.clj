@@ -1,18 +1,6 @@
 (ns billiards.gui.main
-  (use [seesaw core color graphics behave]))
-
-(declare the-frame)
-(def window-width 800)
-(def window-height 600)
-(def board-width 650)
-(def board-height 325)
-(def border-size 20)
-
-(def board-start-x
-  ( / (- window-width (+ board-width (* 2 border-size))) 2))
-
-(def board-start-y
-  ( / (- window-height (+ board-height (* 2 border-size))) 2))
+  (use [seesaw core color graphics behave])
+  (:use [billiards.globals]))
 
 (defn draw-board [c g]
   (draw g (rect
@@ -23,9 +11,22 @@
     (style :background :brown))
   (draw g (rect board-start-x board-start-y board-width board-height) (style :background :green)))
 
+(defn draw-balls [c g]
+  (doseq [ball @balls]
+    (let [x (:x @ball)
+          y (:y @ball)
+          color (:color @ball)]
+      (draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background color)))))
+
+(defn draw-table [c g]
+  (dosync
+    (draw-board c g)
+    (draw-balls c g)))
+
+
 (defn make-panel []
   (border-panel
-    :center (canvas :paint draw-board
+    :center (canvas :paint draw-table
               :class :world
               :background :black)
     :border 5))
@@ -37,12 +38,11 @@
 
 
 (defn redisplay [root]
-  (config! (select root [:.world]) :paint draw-board))
-
-(defonce the-frame (make-frame))
+  (config! (select root [:.world]) :paint draw-table))
 
 (defn start-game []
-  (native!)
-  (config! the-frame :content (make-panel))
-  (show! the-frame)
-  (redisplay the-frame))
+  (let [frame (make-frame)]
+    (reset! main-frame frame)
+    (native!)
+    (config! frame :content (make-panel))
+    (show! frame)))
