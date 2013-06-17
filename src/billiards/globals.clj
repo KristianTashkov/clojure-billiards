@@ -12,11 +12,11 @@
 (def board-width 650)
 (def board-height 325)
 (def border-size 20)
-(def ball-size 10)
-(def ball-max-speed 25.0)
-(def ball-max-power 15.0)
+(def ball-size 9)
+(def ball-max-speed 100.0)
+(def ball-max-power 5.0)
 (def cushion-effect 0.95)
-(def friction 0.05)
+(def friction 0.005)
 (def answer 24)
 
 (def board-start-x

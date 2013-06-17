@@ -4,20 +4,26 @@
     [billiards.physics.ball_physics]))
 
 (defn step []
-  (dosync
-    (doseq [ball @balls]
-      (move-ball ball))))
+  (doseq [ball @balls]
+    (move-ball ball)))
+
+(defn get-pairs-balls [balls]
+  (loop [current (first balls) other (rest balls) result []]
+    (if (seq other)
+      (recur (first other) (rest other) (into result (map (fn [x] [current x]) other)))
+      result)))
 
 (defn collisions []
-  (dosync
-    (doseq [ball @balls]
-      (collision-border-ball ball))))
+  (doseq [pair (get-pairs-balls @balls)]
+    (collision-ball-ball pair))
+  (doseq [ball @balls]
+    (collision-border-ball ball)))
 
 (defn turn [redisplay]
   (let [painter (atom (future (1)))]
-    (while (not-every? #(= 0 (:speed @%)) @balls)
+    (while (not-every? #((complement pos?) (:speed @%)) @balls)
       (step)
       (collisions)
       (when (realized? @painter)
         (reset! painter (future ((redisplay)))))
-      (Thread/sleep 15))))
+      (Thread/sleep 3))))

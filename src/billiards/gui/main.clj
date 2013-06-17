@@ -16,10 +16,10 @@
 
 (defn polygon-rectangle-from-middle-points [a b vect width]
   (let [distVect (product-vector-scalar vect width)
-        point1 (sum-points a distVect)
-        point2 (sum-points a (reverse-vector distVect))
-        point3 (sum-points b (reverse-vector distVect))
-        point4 (sum-points b distVect)]
+        point1 (sum-pair a distVect)
+        point2 (sum-pair a (reverse-vector distVect))
+        point3 (sum-pair b (reverse-vector distVect))
+        point4 (sum-pair b distVect)]
     (polygon point1 point2 point3 point4)))
 
 (defn draw-cue [c g]
@@ -38,7 +38,8 @@
     (let [x (:x @ball)
           y (:y @ball)
           color (:color @ball)]
-      (draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background color)))))
+      (draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background :black))
+      (draw g (circle (+ board-start-x x) (+ board-start-y y) (- ball-size 1)) (style :background color)))))
 
 (defn draw-table [c g]
   (dosync
@@ -74,7 +75,9 @@
   (map-key frame "S"
     (fn [e] (change-power 5) (redisplay frame)) :scope :global)
   (map-key frame "F"
-    (fn [e] (future (shoot (fn [] (redisplay frame))))) :scope :global))
+    (fn [e] (future (try
+                      (shoot (fn [] (redisplay frame)))
+                      (catch Exception e (println e))))) :scope :global))
 
 (defn start-game []
   (let [frame (make-frame)]
