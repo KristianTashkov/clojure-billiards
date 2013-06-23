@@ -77,7 +77,9 @@
   (map-key frame "F"
     (fn [e] (future (try
                       (shoot (fn [] (redisplay frame)))
-                      (catch Exception e (println e))))) :scope :global))
+                      (catch Exception e (do
+                                           (println e)
+                                           (.printStackTrace e)))))) :scope :global))
 
 (defn start-game []
   (let [frame (make-frame)]

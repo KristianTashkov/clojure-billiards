@@ -13,8 +13,8 @@
 (def board-height 325)
 (def border-size 20)
 (def ball-size 9)
-(def ball-max-speed 100.0)
-(def ball-max-power 5.0)
+(def ball-max-speed 10.0)
+(def ball-max-power 6.5)
 (def cushion-effect 0.95)
 (def friction 0.005)
 (def answer 24)
@@ -26,4 +26,4 @@
   ( / (- window-height (+ board-height (* 2 border-size))) 2))
 
 (defn get-white-ball []
-   (first (filter #(= :white (:color @%)) @balls)))
+  (first (filter #(= :white (:color @%)) @balls)))

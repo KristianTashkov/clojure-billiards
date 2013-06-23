@@ -7,8 +7,10 @@
     [newX newY]))
 
 (defn normalize-vector [[x y]]
-  (let [len (sqrt (+ (* x x) (* y y)))]
-    [(/ x len) (/ y len)]))
+  (if (and (zero? x) (zero? y))
+    [0 0]
+    (let [len (sqrt (+ (* x x) (* y y)))]
+      [(/ x len) (/ y len)])))
 
 (defn get-vector-from-angle [angle]
   [(* -1 (sin angle)) (* -1 (cos angle))])
@@ -16,8 +18,14 @@
 (defn get-perp-of-vector [[x y]]
   [y (* -1 x)])
 
-(defn sum-vect [[x1 y1] [x2 y2]]
-  (normalize-vector [(+ x1 x2) (+ y1 y2)]))
+(defn sub-vect [[x1 y1] [x2 y2]]
+  [(- x1 x2) (- y1 y2)])
+
+(defn dot-product [[x1 y1] [x2 y2]]
+  (+ (* x1 x2) (* y1 y2)))
+
+(defn vect-length [vect]
+  (sqrt (dot-product vect vect)))
 
 (defn reverse-vector [[x y]]
   [(* -1 x) (* -1 y)])
@@ -36,3 +44,9 @@
 (defn circle-collision-circle? [[x1 y1 radius1] [x2 y2 radius2]]
   (let [dist (distance-point-to-point [x1 y1] [x2 y2])]
     (< dist (+ radius1 radius2))))
+
+(defn reflect-vector-from-normal [vect normal]
+  (normalize-vector (sum-pair vect
+                      (product-vector-scalar
+                        normal
+                        (* -2 (dot-product vect normal))))))
