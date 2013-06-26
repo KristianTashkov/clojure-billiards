@@ -50,3 +50,18 @@
                       (product-vector-scalar
                         normal
                         (* -2 (dot-product vect normal))))))
+
+(defn closest-point-segment-point [a b c]
+  (let [segment-vect (sub-vect b a)
+        circle-vect (sub-vect c a)
+        segment-vect-normal (normalize-vector segment-vect)
+        proj (dot-product segment-vect-normal circle-vect)]
+    (cond
+      (<= proj 0) a
+      (>= proj (vect-length segment-vect)) b
+      :else (sum-pair a (product-vector-scalar segment-vect-normal proj)))))
+
+(defn segment-collision-circle? [seg-a seg-b [c radius]]
+  (let [closest (closest-point-segment-point seg-a seg-b c)
+        dist-vect (sub-vect c closest)]
+    (< (vect-length dist-vect) radius)))

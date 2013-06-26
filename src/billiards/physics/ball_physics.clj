@@ -8,24 +8,26 @@
     (alter ball update-in [:diry] (fn [x] diry))
     (alter ball update-in [:speed] (fn [x] speed))))
 
-(defn collision-border-ball [ball]
-  (dosync
-    (when (< (:x @ball) ball-size)
-      (alter ball update-in [:x] (fn [x] ball-size))
-      (alter ball update-in [:dirx] (fn [x] (* -1 x)))
-      (alter ball update-in [:speed] (fn [x] (* x cushion-effect))))
-    (when (< (:y @ball) ball-size)
-      (alter ball update-in [:y] (fn [x] ball-size))
-      (alter ball update-in [:diry] (fn [x] (* -1 x)))
-      (alter ball update-in [:speed] (fn [x] (* x cushion-effect))))
-    (when (> (:x @ball) (- board-width ball-size))
-      (alter ball update-in [:x] (fn [x] (- board-width ball-size)))
-      (alter ball update-in [:dirx] (fn [x] (* -1 x)))
-      (alter ball update-in [:speed] (fn [x] (* x cushion-effect))))
-    (when (> (:y @ball) (- board-height ball-size))
-      (alter ball update-in [:y] (fn [x] (- board-height ball-size)))
-      (alter ball update-in [:diry] (fn [x] (* -1 x)))
-      (alter ball update-in [:speed] (fn [x] (* x cushion-effect))))))
+(defn move-ball [ball]
+  (let [speed (min ball-max-speed (:speed @ball))
+        speedx (* speed (:dirx @ball))
+        speedy (* speed (:diry @ball))]
+    (dosync
+      (if (pos? speed)
+        (do
+          (alter ball update-in [:x] #(+ % speedx))
+          (alter ball update-in [:y] #(+ % speedy)))
+        (alter ball update-in [:speed] (fn [x] 0))))))
+
+(defn collision-border-ball [ball border]
+  (when (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
+    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))]
+      (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
+      (move-ball ball))))
+
+(defn collision-borders-ball [ball]
+  (doseq [border @borders]
+    (collision-border-ball ball border)))
 
 (defn fix-position [ball1 ball2]
   (let [dir (normalize-vector [(- (:x @ball2) (:x @ball1)) (- (:y @ball2) (:y @ball1))])
@@ -54,20 +56,14 @@
         reverse-normal (reverse-vector normal)
         vnormal1 (product-vector-scalar reverse-normal (dot-product v1 reverse-normal))
         vnormal2 (product-vector-scalar normal (dot-product v2 normal))
-        vector-tangent1 (sub-vect vnormal1 v1)
-        vector-tangent2 (sub-vect vnormal2 v2)
+        vector-tangent1 (sub-vect v1 vnormal1)
+        vector-tangent2 (sub-vect v2 vnormal2)
         new-direction-1 (sum-pair vector-tangent1 vnormal2)
         new-direction-2 (sum-pair vector-tangent2 vnormal1)
         speed1 (vect-length new-direction-1)
         speed2 (vect-length new-direction-2)
         new-direction-1 (normalize-vector new-direction-1)
-        new-direction-2 (normalize-vector new-direction-2)
-        new-direction-1 (if (> (:speed @ball1) (:speed @ball2))
-                          (reverse-vector new-direction-1)
-                          new-direction-1)
-        new-direction-2 (if (<= (:speed @ball1) (:speed @ball2))
-                          (reverse-vector new-direction-2)
-                          new-direction-2)]
+        new-direction-2 (normalize-vector new-direction-2)]
     (apply-direction ball1 new-direction-1 speed1)
     (apply-direction ball2 new-direction-2 speed2)))
 
@@ -78,14 +74,10 @@
     (fix-direction ball2)
     (calculate-new-direction ball2 ball1)))
 
-(defn move-ball [ball]
-  (let [speed (min ball-max-speed (:speed @ball))
-        speedx (* speed (:dirx @ball))
-        speedy (* speed (:diry @ball))]
-    (dosync
-      (if (pos? speed)
-        (do
-          (alter ball update-in [:x] #(+ % speedx))
-          (alter ball update-in [:y] #(+ % speedy))
-          (alter ball update-in [:speed] (fn [x] (- x friction))))
-        (alter ball update-in [:speed] (fn [x] 0))))))
+(defn apply-friction-ball [ball]
+  (dosync
+    (if (zero? (:friction-counter (ensure ball)))
+      (do
+        (alter ball update-in [:friction-counter] (fn [x] friction-counter-start))
+        (alter ball update-in [:speed] (fn [x] (- x friction-step))))
+      (alter ball update-in [:friction-counter] dec))))
