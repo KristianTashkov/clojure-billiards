@@ -1,33 +1,43 @@
-(ns billiards.globals)
+(ns billiards.globals
+  (:use [clojure.contrib.generic.math-functions]))
 
 (def main-frame (atom {}))
-(def borders (atom {}))
-(def pockets (atom {}))
-(def balls (atom {}))
+(def border-points (atom []))
+(def borders (atom []))
+(def pockets (atom []))
+(def balls (atom []))
 (def cue-angle (atom 0))
 (def cue-power (atom 0))
 (def is-playing (atom true))
 
-(def window-width 800)
-(def window-height 600)
-(def board-width 650)
-(def board-height 325)
-(def board-padding 10)
-(def border-size 20)
+(def window-width 800.0)
+(def window-height 600.0)
+(def board-width 650.0)
+(def board-height 325.0)
+(def board-padding 10.0)
+(def border-size 20.0)
 (def ball-size 9.0)
-(def pocket-size 12.0)
+(def pocket-size 15.0)
 (def ball-max-speed 10.0)
 (def ball-max-power 6.5)
 (def cushion-effect 0.85)
 (def friction-counter-start 2)
 (def friction 0.015)
 (def friction-step (/ friction friction-counter-start))
+(def corner-pocket-angle-percent 1.5)
+(def middle-pocket-angle-percent 0.9)
 
 (def board-start-x
   (/ (- window-width board-width) 2))
 
 (def board-start-y
   (/ (- window-height board-height) 2))
+
+(def long-side-length
+  (/ (- board-width (* 3 pocket-size)) 2))
+
+(def short-side-length
+  (- board-height (* 2 pocket-size)))
 
 (defn get-white-ball []
   (first (filter #(= :white (:color @%)) @balls)))

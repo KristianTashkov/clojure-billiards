@@ -38,3 +38,10 @@
       (is (= (segment-collision-circle? seg-a seg-b [[15.0 0.0] 5]) false)))
     (testing "segment through circle"
       (is (= (segment-collision-circle? seg-a seg-b [[5.0 0.0] 1]) true)))))
+
+(deftest reflect-vector-from-normal-test
+  (testing "testing reflection"
+    (is (= (reflect-vector-from-normal [1 1] [0 1]) (normalize-vector [1 -1])))
+    (is (= (reflect-vector-from-normal [0 1] [0 1]) (normalize-vector [0 -1])))
+    (is (= (reflect-vector-from-normal [1 1] [0 -1]) (normalize-vector [1 -1])))))
+

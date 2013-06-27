@@ -13,14 +13,27 @@
         point4 (sum-pair b distVect)]
     (polygon point1 point2 point3 point4)))
 
+(defn draw-borders [c g]
+  (loop [[a b c d] (take 4 @border-points) other (take-last (- (count @border-points) 4) @border-points)]
+    (when (and a b c d)
+      (let [a [(+ board-start-x (first a)) (+ board-start-y (second a))]
+            b [(+ board-start-x (first b)) (+ board-start-y (second b))]
+            c [(+ board-start-x (first c)) (+ board-start-y (second c))]
+            d [(+ board-start-x (first d)) (+ board-start-y (second d))]]
+        (draw g (polygon a b c d) (style :background :brown))
+        (recur (take 4 other) (take-last (- (count other) 4) other))))))
+
+(defn draw-pockets [c g]
+  (doseq [pocket @pockets]
+    (let [x (first pocket)
+          y (second pocket)]
+      (draw g (circle (+ board-start-x x) (+ board-start-y y) pocket-size) (style :background :black)))))
+
 (defn draw-board [c g]
-  (draw g (rect board-start-x board-start-y board-width board-height) (style :background :brown))
-  (draw g (rect
-            (+ board-start-x border-size)
-            (+ board-start-y border-size)
-            (- board-width (* 2 border-size))
-            (- board-height (* 2 border-size)))
-    (style :background :green)))
+  (draw g (rect board-start-x board-start-y board-width board-height)
+    (style :background :green))
+  (draw-pockets c g)
+  (draw-borders c g))
 
 (defn draw-cue [c g]
   (let [ball (get-white-ball)
@@ -41,17 +54,25 @@
       (draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background :black))
       (draw g (circle (+ board-start-x x) (+ board-start-y y) (- ball-size 1)) (style :background color)))))
 
-(defn draw-pockets [c g]
-  (doseq [pocket @pockets]
-    (let [x (first pocket)
-          y (second pocket)]
-      (draw g (circle (+ board-start-x x) (+ board-start-y y) pocket-size) (style :background :black)))))
+(defn draw-decorations [c g]
+  (draw g
+    (rect (- board-start-x pocket-size) (- board-start-y pocket-size) (+ board-width (* 2 pocket-size)) pocket-size)
+    (style :background :brown))
+  (draw g
+    (rect (- board-start-x pocket-size) (+ (- board-height 1) board-start-y) (+ board-width (* 2 pocket-size)) pocket-size)
+    (style :background :brown))
+  (draw g
+    (rect (+ board-start-x board-width) (- board-start-y pocket-size) pocket-size (+ board-height pocket-size))
+    (style :background :brown))
+  (draw g
+    (rect (- board-start-x pocket-size) (- board-start-y pocket-size) pocket-size (+ board-height pocket-size))
+    (style :background :brown)))
 
 (defn draw-table [c g]
   (dosync
     (draw-board c g)
-    (draw-pockets c g)
     (draw-balls c g)
+    (draw-decorations c g)
     (when @is-playing
       (draw-cue c g))))
 
