@@ -22,14 +22,10 @@
 
 (defn collision-border-ball [ball border]
   (when (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
-    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
-          normalx (first (:normal border))
-          normaly (second (:normal border))]
-      (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
-      (while (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
-        (dosync
-          (alter ball update-in [:x] #(+ % normalx))
-          (alter ball update-in [:y] #(+ % normaly)))))))
+    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))]
+      (apply-direction ball new-dir (:speed @ball))
+      (move-ball ball)
+      (apply-direction ball new-dir (* (:speed @ball) cushion-effect)))))
 
 (defn collision-borders-ball [ball]
   (doseq [border @borders]
