@@ -1,5 +1,6 @@
 (ns billiards.core
-  (:use [clojure.tools.namespace.repl :only (refresh)]
+  (:use
+    [clojure.tools.namespace.repl :only (refresh)]
     [billiards.gui.main :only [start-game redisplay]]
     [billiards.globals]
     [billiards.physics.ball_physics]
@@ -35,10 +36,10 @@
 
 (defn get-pockets []
   [[board-padding board-padding]
-   [(/ board-width 2) (- board-padding (/ pocket-size 2))]
+   [(/ board-width 2) (- board-padding (* pocket-size 2/3))]
    [(- board-width board-padding) board-padding]
    [board-padding (- board-height board-padding)]
-   [(/ board-width 2) (+ (- board-height board-padding) (/ pocket-size 2))]
+   [(/ board-width 2) (+ (- board-height board-padding) (* pocket-size 2/3))]
    [(- board-width board-padding) (- board-height board-padding)]])
 
 (defn create-border [start end]
@@ -74,19 +75,14 @@
   (into (create-triangle) [(create-ball (* board-width 7/8) (* board-height 1/2) :white)]))
 
 (defn start []
-  (reset! balls (get-initial-balls))
+  (dosync
+    (ref-set balls (get-initial-balls)))
   (reset! border-points (get-border-points))
   (generate-borders)
   (reset! pockets (get-pockets))
   (start-game))
 
-(defn restart []
-  (refresh)
-  (reset! is-playing true)
-  (start))
-
 (defn -main
-  "I don't do a whole lot ... yet."
   [& args]
   ;; work around dangerous default behaviour in Clojure
   (alter-var-root #'*read-eval* (constantly false))

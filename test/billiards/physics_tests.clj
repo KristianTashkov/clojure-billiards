@@ -1,7 +1,8 @@
 (ns billiards.physics_tests
-  (:use clojure.test
-    billiards.physics.ball_physics
-    billiards.physics.geometry))
+  (:use
+    [clojure.test]
+    [billiards.physics.ball_physics]
+    [billiards.physics.geometry]))
 
 (deftest closest-point-segment-point-test
   (let [seg-a [0.0 0.0]

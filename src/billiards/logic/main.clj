@@ -15,6 +15,8 @@
       result)))
 
 (defn collisions []
+  (doseq [ball @balls]
+    (collision-ball-pockets ball))
   (doseq [pair (get-pairs-balls @balls)]
     (collision-ball-ball pair))
   (doseq [ball @balls]

@@ -1,6 +1,6 @@
 (ns billiards.gui.main
-  (use [seesaw core color graphics behave keymap])
   (:use
+    [seesaw core color graphics behave keymap]
     [billiards.globals]
     [billiards.physics.geometry]
     [billiards.gui.actions]))
@@ -56,16 +56,32 @@
 
 (defn draw-decorations [c g]
   (draw g
-    (rect (- board-start-x pocket-size) (- board-start-y pocket-size) (+ board-width (* 2 pocket-size)) pocket-size)
+    (rect
+      (- board-start-x outside-border-size)
+      (- board-start-y outside-border-size)
+      (+ board-width (* 2 outside-border-size))
+      outside-border-size)
     (style :background :brown))
   (draw g
-    (rect (- board-start-x pocket-size) (+ (- board-height 1) board-start-y) (+ board-width (* 2 pocket-size)) pocket-size)
+    (rect
+      (- board-start-x outside-border-size)
+      (+ (- board-height 1) board-start-y)
+      (+ board-width (* 2 outside-border-size))
+      outside-border-size)
     (style :background :brown))
   (draw g
-    (rect (+ board-start-x board-width) (- board-start-y pocket-size) pocket-size (+ board-height pocket-size))
+    (rect
+      (+ board-start-x board-width)
+      (- board-start-y outside-border-size)
+      outside-border-size
+      (+ board-height outside-border-size))
     (style :background :brown))
   (draw g
-    (rect (- board-start-x pocket-size) (- board-start-y pocket-size) pocket-size (+ board-height pocket-size))
+    (rect
+      (- board-start-x outside-border-size)
+      (- board-start-y outside-border-size)
+      outside-border-size
+      (+ board-height outside-border-size))
     (style :background :brown)))
 
 (defn draw-table [c g]

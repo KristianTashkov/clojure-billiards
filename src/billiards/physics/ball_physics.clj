@@ -1,5 +1,6 @@
 (ns billiards.physics.ball_physics
-  (:use [billiards.globals]
+  (:use
+    [billiards.globals]
     [billiards.physics.geometry]))
 
 (defn apply-direction [ball [dirx diry] speed]
@@ -21,9 +22,14 @@
 
 (defn collision-border-ball [ball border]
   (when (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
-    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))]
+    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
+          normalx (first (:normal border))
+          normaly (second (:normal border))]
       (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
-      (move-ball ball))))
+      (while (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
+        (dosync
+          (alter ball update-in [:x] #(+ % normalx))
+          (alter ball update-in [:y] #(+ % normaly)))))))
 
 (defn collision-borders-ball [ball]
   (doseq [border @borders]
@@ -81,3 +87,21 @@
         (alter ball update-in [:friction-counter] (fn [x] friction-counter-start))
         (alter ball update-in [:speed] (fn [x] (- x friction-step))))
       (alter ball update-in [:friction-counter] dec))))
+
+(defn pocket-white-ball [ball]
+  (apply-direction ball [0.0 0.0] 0.0))
+
+(defn pocket-colored-ball [ball]
+  (dosync
+    (alter balls (fn [coll] (remove #{ball} coll)))))
+
+(defn pocket-ball [ball]
+  (if (= (:color @ball) :white)
+    (pocket-white-ball ball)
+    (pocket-colored-ball ball)))
+
+(defn collision-ball-pockets [ball]
+  (doseq [pocket @pockets]
+    (let [distance (distance-point-to-point [(:x @ball) (:y @ball)] pocket)]
+      (when (<= distance pocket-size)
+        (pocket-ball ball)))))
