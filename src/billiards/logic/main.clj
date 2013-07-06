@@ -14,9 +14,22 @@
       (recur (first other) (rest other) (into result (map (fn [x] [current x]) other)))
       result)))
 
+(defn pocket-white-ball [ball]
+  (reset! is-free-ball true))
+
+(defn pocket-colored-ball [ball])
+
+(defn pocket-ball [ball]
+  (dosync
+    (alter balls (fn [coll] (remove #{ball} coll))))
+  (if (= (:color @ball) :white)
+    (pocket-white-ball ball)
+    (pocket-colored-ball ball)))
+
 (defn collisions []
-  (doseq [ball @balls]
-    (collision-ball-pockets ball))
+  (doseq [ball @balls pocket @pockets]
+    (when (collision-ball-pocket? ball pocket)
+      (pocket-ball ball)))
   (doseq [pair (get-pairs-balls @balls)]
     (collision-ball-ball pair))
   (doseq [ball @balls]
@@ -29,4 +42,11 @@
       (collisions)
       (when (realized? @painter)
         (reset! painter (future ((redisplay)))))
-      (Thread/sleep 3))))
+      (Thread/sleep 3)))
+  (when @is-free-ball
+    (dosync
+      (alter balls conj (create-ball
+                          (+ board-padding (* 2 pocket-size))
+                          (+ board-padding (* 2 pocket-size))
+                          :white)))
+    (redisplay)))

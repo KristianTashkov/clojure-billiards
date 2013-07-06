@@ -89,7 +89,7 @@
     (draw-board c g)
     (draw-balls c g)
     (draw-decorations c g)
-    (when @is-playing
+    (when (and @is-playing (not @is-free-ball))
       (draw-cue c g))))
 
 (defn redisplay [root]
@@ -100,29 +100,24 @@
   (border-panel
     :center (canvas :paint draw-table
               :class :world
-              :background :aqua)))
+              :background :aqua
+              :cursor :crosshair)))
 
 (defn make-frame []
   (frame :title   "Billiards"
     :size    [window-width :by window-height]
     :content (make-panel)))
 
+(defn new-thread-run [action]
+  (future (try
+            (action)
+            (catch Exception e (do
+                                 (println e)
+                                 (.printStackTrace e))))))
 
 (defn add-bindings [frame]
-  (map-key frame "A"
-    (fn [e] (move-cue 0.05) (redisplay frame)) :scope :global)
-  (map-key frame "D"
-    (fn [e] (move-cue -0.05) (redisplay frame)) :scope :global)
-  (map-key frame "W"
-    (fn [e] (change-power -5) (redisplay frame)) :scope :global)
-  (map-key frame "S"
-    (fn [e] (change-power 5) (redisplay frame)) :scope :global)
-  (map-key frame "F"
-    (fn [e] (future (try
-                      (shoot (fn [] (redisplay frame)))
-                      (catch Exception e (do
-                                           (println e)
-                                           (.printStackTrace e)))))) :scope :global))
+  (listen frame :mouse-moved (fn [e] (mouse-moved e (fn [] (redisplay frame)))))
+  (listen frame :mouse-released (fn [e] (new-thread-run #(mouse-released e (fn [] (redisplay frame)))))))
 
 (defn start-game []
   (let [frame (make-frame)]

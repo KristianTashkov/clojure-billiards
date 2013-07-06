@@ -9,6 +9,8 @@
 (def cue-angle (atom 0))
 (def cue-power (atom 0))
 (def is-playing (atom true))
+(def is-shooting (atom false))
+(def is-free-ball (atom false))
 
 (def window-width 800.0)
 (def window-height 600.0)
@@ -39,6 +41,9 @@
 
 (def short-side-length
   (- board-height (* 2 pocket-size)))
+
+(defn create-ball [x y color]
+  (ref {:x x :y y :color color :speed 0.0 :dirx 0.0 :diry 0.0 :friction-counter friction-counter-start}))
 
 (defn get-white-ball []
   (first (filter #(= :white (:color @%)) @balls)))

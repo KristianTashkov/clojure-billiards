@@ -20,11 +20,21 @@
           (alter ball update-in [:y] #(+ % speedy)))
         (alter ball update-in [:speed] (fn [x] 0))))))
 
+(defn collision-border-ball-check? [ball border]
+  (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size]))
+
+(defn collision-borders-ball-check? [ball]
+  (some #{true} (for [border @borders]
+                  (collision-border-ball-check? ball border))))
+
 (defn collision-border-ball [ball border]
-  (when (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size])
-    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))]
-      (apply-direction ball new-dir (:speed @ball))
-      (move-ball ball)
+  (when (collision-border-ball-check? ball border)
+    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
+          [reverse-dir-x reverse-dir-y] (product-vector-scalar [(:dirx @ball) (:diry @ball)] -1)]
+      (while (collision-borders-ball-check? ball)
+        (dosync
+          (alter ball update-in [:x] #(+ % reverse-dir-x))
+          (alter ball update-in [:y] #(+ % reverse-dir-y))))
       (apply-direction ball new-dir (* (:speed @ball) cushion-effect)))))
 
 (defn collision-borders-ball [ball]
@@ -47,10 +57,6 @@
       (alter ball2 update-in [:x] (fn [x] (first newPosition2)))
       (alter ball2 update-in [:y] (fn [x] (second newPosition2))))))
 
-(defn fix-direction [ball]
-  (when ((complement pos?) (:speed @ball))
-    (apply-direction ball [0.0 0.0] 0.0)))
-
 (defn calculate-new-direction[ball1 ball2]
   (let [v1 (product-vector-scalar [(:dirx @ball1) (:diry @ball1)] (:speed @ball1))
         v2 (product-vector-scalar [(:dirx @ball2) (:diry @ball2)] (:speed @ball2))
@@ -72,8 +78,6 @@
 (defn collision-ball-ball [[ball1 ball2]]
   (when (circle-collision-circle? [(:x @ball1) (:y @ball1) ball-size] [(:x @ball2) (:y @ball2) ball-size])
     (fix-position ball1 ball2)
-    (fix-direction ball1)
-    (fix-direction ball2)
     (calculate-new-direction ball2 ball1)))
 
 (defn apply-friction-ball [ball]
@@ -84,20 +88,6 @@
         (alter ball update-in [:speed] (fn [x] (- x friction-step))))
       (alter ball update-in [:friction-counter] dec))))
 
-(defn pocket-white-ball [ball]
-  (apply-direction ball [0.0 0.0] 0.0))
-
-(defn pocket-colored-ball [ball]
-  (dosync
-    (alter balls (fn [coll] (remove #{ball} coll)))))
-
-(defn pocket-ball [ball]
-  (if (= (:color @ball) :white)
-    (pocket-white-ball ball)
-    (pocket-colored-ball ball)))
-
-(defn collision-ball-pockets [ball]
-  (doseq [pocket @pockets]
-    (let [distance (distance-point-to-point [(:x @ball) (:y @ball)] pocket)]
-      (when (<= distance pocket-size)
-        (pocket-ball ball)))))
+(defn collision-ball-pocket? [ball pocket]
+  (let [distance (distance-point-to-point [(:x @ball) (:y @ball)] pocket)]
+    (<= distance pocket-size)))

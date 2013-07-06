@@ -55,9 +55,6 @@
       (create-border c d)
       (recur (take 4 other) (take-last (- (count other) 4) other)))))
 
-(defn create-ball [x y color]
-  (ref {:x x :y y :color color :speed 0.0 :dirx 0.0 :diry 0.0 :friction-counter friction-counter-start}))
-
 (defn create-triangle []
   (let [start-x (+ (* board-width 1/8) ball-size)
         start-y (+ (/ (- board-height (* 5 (* 2 ball-size))) 2) ball-size)]
