@@ -116,6 +116,7 @@
                                  (.printStackTrace e))))))
 
 (defn add-bindings [frame]
+  (listen frame :mouse-dragged (fn [e] (mouse-moved e (fn [] (redisplay frame)))))
   (listen frame :mouse-moved (fn [e] (mouse-moved e (fn [] (redisplay frame)))))
   (listen frame :mouse-released (fn [e] (new-thread-run #(mouse-released e (fn [] (redisplay frame)))))))
 

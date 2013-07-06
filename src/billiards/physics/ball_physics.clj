@@ -35,11 +35,14 @@
         (dosync
           (alter ball update-in [:x] #(+ % reverse-dir-x))
           (alter ball update-in [:y] #(+ % reverse-dir-y))))
-      (apply-direction ball new-dir (* (:speed @ball) cushion-effect)))))
+      (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
+      true)))
 
 (defn collision-borders-ball [ball]
-  (doseq [border @borders]
-    (collision-border-ball ball border)))
+  (let [break-token (atom false)]
+    (doseq [border @borders]
+      (when (not @break-token)
+        (reset! break-token (collision-border-ball ball border))))))
 
 (defn fix-position [ball1 ball2]
   (let [dir (normalize-vector [(- (:x @ball2) (:x @ball1)) (- (:y @ball2) (:y @ball1))])
