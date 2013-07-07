@@ -7,11 +7,11 @@
 
 (defn change-power [change]
   (swap! cue-power (fn [old]
-                     (let [newVal (+ old change)]
+                     (let [new-val (+ old change)]
                        (cond
-                         (< newVal 0) 0
-                         (> newVal 100) 100
-                         :else newVal)))))
+                         (< new-val 0) 0
+                         (> new-val 100) 100
+                         :else new-val)))))
 
 (defn shoot [redisplay]
   (reset! is-playing false)

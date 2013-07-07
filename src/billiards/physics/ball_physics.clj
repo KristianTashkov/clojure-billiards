@@ -27,6 +27,16 @@
   (some #{true} (for [border @borders]
                   (collision-border-ball-check? ball border))))
 
+(defn right-border? [ball [new-dirx new-diry]]
+  (dosync
+    (alter ball update-in [:x] #(+ % new-dirx))
+    (alter ball update-in [:y] #(+ % new-diry)))
+  (let [result (collision-borders-ball-check? ball)]
+    (dosync
+      (alter ball update-in [:x] #(- % new-dirx))
+      (alter ball update-in [:y] #(- % new-diry)))
+    (not result)))
+
 (defn collision-border-ball [ball border]
   (when (collision-border-ball-check? ball border)
     (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
@@ -35,8 +45,14 @@
         (dosync
           (alter ball update-in [:x] #(+ % reverse-dir-x))
           (alter ball update-in [:y] #(+ % reverse-dir-y))))
-      (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
-      true)))
+      (if (right-border? ball new-dir)
+        (do
+          (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
+          true)
+        (dosync
+          (alter ball update-in [:x] #(+ % (:dirx @ball)))
+          (alter ball update-in [:y] #(+ % (:diry @ball)))
+          false)))))
 
 (defn collision-borders-ball [ball]
   (let [break-token (atom false)]

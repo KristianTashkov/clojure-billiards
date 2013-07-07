@@ -55,6 +55,24 @@
       (create-border c d)
       (recur (take 4 other) (take-last (- (count other) 4) other)))))
 
+(defn get-ball-color [row number]
+  (let [color-map {[1 0] :red
+                   [2 0] :yellow
+                   [3 0] :red
+                   [4 0] :yellow
+                   [5 0] :red
+                   [5 1] :yellow
+                   [5 2] :red
+                   [5 3] :yellow
+                   [5 4] :red
+                   [4 3] :yellow
+                   [3 2] :red
+                   [2 1] :yellow
+                   [3 1] :black
+                   [4 1] :yellow
+                   [4 2] :red}]
+    (color-map [row number])))
+
 (defn create-triangle []
   (let [start-x (+ (* board-width 1/8) ball-size)
         start-y (+ (/ (- board-height (* 5 (* 2 ball-size))) 2) ball-size)]
@@ -64,7 +82,7 @@
                             (create-ball
                               (+ start-x (* (* 2 ball-size) (- 5 row)))
                               (+ start-y (+ (* (- 5 row) ball-size) (* (* 2 ball-size) current)))
-                              :red))]
+                              (get-ball-color row current)))]
           (recur (- row 1) (into result current-row)))
         result))))
 
