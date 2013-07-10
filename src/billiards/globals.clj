@@ -11,6 +11,7 @@
 (def is-playing (atom true))
 (def is-shooting (atom false))
 (def is-free-ball (atom false))
+(def painting-future (atom nil))
 
 (def window-width 800.0)
 (def window-height 600.0)
@@ -21,7 +22,7 @@
 (def outside-border-size 22)
 (def ball-size 10.0)
 (def pocket-size 20)
-(def ball-max-speed 10.0)
+(def ball-max-speed 15.0)
 (def ball-max-power 6.5)
 (def cushion-effect 0.85)
 (def friction-counter-start 2)

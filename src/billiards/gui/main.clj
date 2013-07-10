@@ -1,6 +1,6 @@
 (ns billiards.gui.main
   (:use
-    [seesaw core color graphics behave keymap]
+    [seesaw core color graphics behave]
     [billiards.globals]
     [billiards.physics.geometry]
     [billiards.gui.actions]))
@@ -20,7 +20,7 @@
             b [(+ board-start-x (first b)) (+ board-start-y (second b))]
             c [(+ board-start-x (first c)) (+ board-start-y (second c))]
             d [(+ board-start-x (first d)) (+ board-start-y (second d))]]
-        (draw g (polygon a b c d) (style :background :brown))
+        (draw g (polygon a b c d) (style :background :brown  :stroke 1 :foreground :black))
         (recur (take 4 other) (take-last (- (count other) 4) other))))))
 
 (defn draw-pockets [c g]
@@ -30,6 +30,12 @@
       (draw g (circle (+ board-start-x x) (+ board-start-y y) pocket-size) (style :background :black)))))
 
 (defn draw-board [c g]
+  (draw g (rect
+            (- (- board-start-x outside-border-size) 1)
+            (- (- board-start-y outside-border-size) 1)
+            (+ (+ board-width 2) (* 2 outside-border-size))
+            (+ (+ board-height 1) (* 2 outside-border-size)))
+    (style :background :black))
   (draw g (rect board-start-x board-start-y board-width board-height)
     (style :background :green))
   (draw-pockets c g)
@@ -51,8 +57,8 @@
     (let [x (:x @ball)
           y (:y @ball)
           color (:color @ball)]
-      (draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background :black))
-      (draw g (circle (+ board-start-x x) (+ board-start-y y) (- ball-size 1)) (style :background color)))))
+      ;(draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background :black))
+      (draw g (circle (+ board-start-x x) (+ board-start-y y) (- ball-size 1)) (style :background color :stroke 1 :foreground :black)))))
 
 (defn draw-decorations [c g]
   (draw g
@@ -60,7 +66,7 @@
       (- board-start-x outside-border-size)
       (- board-start-y outside-border-size)
       (+ board-width (* 2 outside-border-size))
-      outside-border-size)
+      (+ 1 outside-border-size))
     (style :background :brown))
   (draw g
     (rect
@@ -80,7 +86,7 @@
     (rect
       (- board-start-x outside-border-size)
       (- board-start-y outside-border-size)
-      outside-border-size
+      (+ outside-border-size 1)
       (+ board-height outside-border-size))
     (style :background :brown)))
 
@@ -116,9 +122,17 @@
                                  (.printStackTrace e))))))
 
 (defn add-bindings [frame]
-  (listen frame :mouse-dragged (fn [e] (mouse-moved e (fn [] (redisplay frame)))))
-  (listen frame :mouse-moved (fn [e] (mouse-moved e (fn [] (redisplay frame)))))
-  (listen frame :mouse-released (fn [e] (new-thread-run #(mouse-released e (fn [] (redisplay frame)))))))
+  (listen frame :mouse-dragged (fn [e] (mouse-moved e)))
+  (listen frame :mouse-moved (fn [e] (mouse-moved e)))
+  (listen frame :mouse-released (fn [e] (new-thread-run #(mouse-released e)))))
+
+(defn start-painting-thread [frame]
+  (when @painting-future
+    (future-cancel @painting-future))
+  (reset! painting-future (new-thread-run (fn []
+                                            (while true
+                                              (redisplay frame)
+                                              (Thread/sleep 5))))))
 
 (defn start-game []
   (let [frame (make-frame)]
@@ -126,4 +140,5 @@
     (add-bindings frame)
     (native!)
     (config! frame :content (make-panel))
-    (show! frame)))
+    (show! frame)
+    (start-painting-thread frame)))

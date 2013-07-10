@@ -1,7 +1,7 @@
 (ns billiards.core
   (:use
     [clojure.tools.namespace.repl :only (refresh)]
-    [billiards.gui.main :only [start-game redisplay]]
+    [billiards.gui.main :only [start-game]]
     [billiards.globals]
     [billiards.physics.ball_physics]
     [billiards.physics.geometry]

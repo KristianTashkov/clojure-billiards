@@ -35,18 +35,14 @@
   (doseq [ball @balls]
     (collision-borders-ball ball)))
 
-(defn turn [redisplay]
-  (let [painter (atom (future (1)))]
-    (while (not-every? #((complement pos?) (:speed @%)) @balls)
-      (step)
-      (collisions)
-      (when (realized? @painter)
-        (reset! painter (future ((redisplay)))))
-      (Thread/sleep 3)))
+(defn turn []
+  (while (not-every? #((complement pos?) (:speed @%)) @balls)
+    (step)
+    (collisions)
+    (Thread/sleep 3))
   (when @is-free-ball
     (dosync
       (alter balls conj (create-ball
                           (+ board-padding (* 2 pocket-size))
                           (+ board-padding (* 2 pocket-size))
-                          :white)))
-    (redisplay)))
+                          :white)))))

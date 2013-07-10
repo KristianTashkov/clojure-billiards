@@ -13,7 +13,7 @@
                          (> new-val 100) 100
                          :else new-val)))))
 
-(defn shoot [redisplay]
+(defn shoot []
   (reset! is-playing false)
   (let [ball (get-white-ball)
         dir (get-vector-from-angle @cue-angle)
@@ -22,38 +22,35 @@
       (alter ball update-in [:speed] (fn [old] (/ (* ball-max-power @cue-power) 100)))
       (alter ball update-in [:dirx] (fn [old] dirX))
       (alter ball update-in [:diry] (fn [old] dirY))))
-  (turn redisplay)
-  (reset! is-playing true)
-  (redisplay))
+  (turn)
+  (reset! is-playing true))
 
-(defn start-shooting [redisplay]
+(defn start-shooting []
   (reset! is-shooting true)
   (while @is-shooting
     (change-power 1)
-    (Thread/sleep 15)
-    (redisplay))
+    (Thread/sleep 15))
   (reset! cue-power 0))
 
-(defn place-free-ball [redisplay]
+(defn place-free-ball []
   (let [white-ball (get-white-ball)]
     (when (every? #(= % false) (for [ball @balls
                                      :when (not= ball white-ball)]
                                  (circle-collision-circle?
                                    [(:x @white-ball) (:y @white-ball) ball-size]
                                    [(:x @ball) (:y @ball) ball-size])))
-      (reset! is-free-ball false)
-      (redisplay))))
+      (reset! is-free-ball false))))
 
-(defn mouse-released [event redisplay]
+(defn mouse-released [event]
   (when @is-playing
     (if @is-free-ball
-      (place-free-ball redisplay)
+      (place-free-ball)
       (do
         (if @is-shooting
           (do
-            (shoot redisplay)
+            (shoot)
             (reset! is-shooting false))
-          (start-shooting redisplay))))))
+          (start-shooting))))))
 
 (defn adjust-cue [mousex mousey white-ball]
   (let [dir (sub-vect [mousex mousey] [(+ board-start-x (:x @white-ball)) (+ board-start-y (:y @white-ball))])]
@@ -71,12 +68,11 @@
                                             mousey
                                             (+ (* 2 ball-size) board-padding board-start-y)
                                             (+ board-start-y (- board-height (* 2 ball-size) board-padding))) board-start-y)))))
-(defn mouse-moved [event redisplay]
+(defn mouse-moved [event]
   (when @is-playing
     (let [[mousex mousey] (location event)
           [mousex mousey] [(- mousex 10) (- mousey 30)]
           white-ball (get-white-ball)]
       (if @is-free-ball
         (adjust-ball mousex mousey white-ball)
-        (adjust-cue mousex mousey white-ball))
-      (redisplay))))
+        (adjust-cue mousex mousey white-ball)))))
