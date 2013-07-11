@@ -95,6 +95,12 @@
   (reset! border-points (get-border-points))
   (generate-borders)
   (reset! pockets (get-pockets))
+  (reset! player-one-pocketed [])
+  (reset! player-two-pocketed [])
+  (reset! player-one-color :none)
+  (reset! player-two-color :none)
+  (reset! is-playing true)
+  (reset! player-one-turn true)
   (start-game))
 
 (defn -main

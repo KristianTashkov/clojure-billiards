@@ -57,7 +57,6 @@
     (let [x (:x @ball)
           y (:y @ball)
           color (:color @ball)]
-      ;(draw g (circle (+ board-start-x x) (+ board-start-y y) ball-size) (style :background :black))
       (draw g (circle (+ board-start-x x) (+ board-start-y y) (- ball-size 1)) (style :background color :stroke 1 :foreground :black)))))
 
 (defn draw-decorations [c g]
@@ -90,11 +89,33 @@
       (+ board-height outside-border-size))
     (style :background :brown)))
 
+(defn draw-turn-indicator [g x y player-one]
+  (draw g
+    (circle x y ball-size)
+    (style :background (if (= player-one @player-one-turn) :white "#534B4F") :stroke 1 :foreground :black)))
+
+(defn draw-pocketed-balls [g x y player-one]
+  (let [balls (if player-one @player-one-pocketed @player-two-pocketed)
+        direction (if player-one 1 -1)]
+    (doseq [i (range (count balls))]
+      (draw g (circle (+ (* direction i 2 ball-size) x 2) y ball-size)
+        (style :background (nth balls i) :stroke 1 :foreground :black)))))
+
+(defn draw-info-panel [c g]
+  (let [starting-x-one (+ (- board-start-x outside-border-size) ball-size)
+        starting-x-two (+ starting-x-one board-width outside-border-size)
+        starting-y (- board-start-y outside-border-size (* 2 ball-size))]
+    (draw-turn-indicator g starting-x-one starting-y true)
+    (draw-turn-indicator g starting-x-two starting-y false)
+    (draw-pocketed-balls g (+ starting-x-one (* 4 ball-size)) starting-y true)
+    (draw-pocketed-balls g (-  starting-x-two (* 4 ball-size)) starting-y false)))
+
 (defn draw-table [c g]
   (dosync
     (draw-board c g)
     (draw-balls c g)
     (draw-decorations c g)
+    (draw-info-panel c g)
     (when (and @is-playing (not @is-free-ball))
       (draw-cue c g))))
 
@@ -106,12 +127,14 @@
   (border-panel
     :center (canvas :paint draw-table
               :class :world
-              :background :aqua
+              :background "#013220"
               :cursor :crosshair)))
 
 (defn make-frame []
   (frame :title   "Billiards"
     :size    [window-width :by window-height]
+    :resizable? false
+    :on-close :dispose
     :content (make-panel)))
 
 (defn new-thread-run [action]
@@ -127,16 +150,17 @@
   (listen frame :mouse-released (fn [e] (new-thread-run #(mouse-released e)))))
 
 (defn start-painting-thread [frame]
-  (when @painting-future
-    (future-cancel @painting-future))
+  (try
+    (when @painting-future
+      (future-cancel @painting-future))
+    (catch Exception e))
   (reset! painting-future (new-thread-run (fn []
-                                            (while true
+                                            (while frame
                                               (redisplay frame)
                                               (Thread/sleep 5))))))
 
 (defn start-game []
   (let [frame (make-frame)]
-    (reset! main-frame frame)
     (add-bindings frame)
     (native!)
     (config! frame :content (make-panel))

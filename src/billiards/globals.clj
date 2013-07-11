@@ -1,7 +1,6 @@
 (ns billiards.globals
   (:use [clojure.contrib.generic.math-functions]))
 
-(def main-frame (atom {}))
 (def border-points (atom []))
 (def borders (atom []))
 (def pockets (atom []))
@@ -12,6 +11,11 @@
 (def is-shooting (atom false))
 (def is-free-ball (atom false))
 (def painting-future (atom nil))
+(def player-one-turn (atom true))
+(def player-one-pocketed (atom []))
+(def player-two-pocketed (atom []))
+(def player-one-color (atom :none))
+(def player-two-color (atom :none))
 
 (def window-width 800.0)
 (def window-height 600.0)
@@ -48,3 +52,8 @@
 
 (defn get-white-ball []
   (first (filter #(= :white (:color @%)) @balls)))
+
+(defn other-color-ball [color]
+   (if (= color :red)
+      :yellow
+      :red))

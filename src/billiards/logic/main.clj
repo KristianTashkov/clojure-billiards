@@ -17,7 +17,15 @@
 (defn pocket-white-ball [ball]
   (reset! is-free-ball true))
 
-(defn pocket-colored-ball [ball])
+(defn pocket-colored-ball [ball]
+  (let [color (if @player-one-turn @player-one-color @player-two-color)]
+    (when (= color :none)
+      (let [current (if @player-one-turn player-one-color player-two-color)
+            other (if-not @player-one-turn player-one-color player-two-color)]
+        (reset! current (:color @ball))
+        (reset! other (other-color-ball (:color @ball))))))
+  (let [which (if (= (:color @ball) @player-one-color) player-one-pocketed player-two-pocketed)]
+    (swap! which conj (:color @ball))))
 
 (defn pocket-ball [ball]
   (dosync
@@ -40,6 +48,7 @@
     (step)
     (collisions)
     (Thread/sleep 3))
+  (swap! player-one-turn #(not %))
   (when @is-free-ball
     (dosync
       (alter balls conj (create-ball
