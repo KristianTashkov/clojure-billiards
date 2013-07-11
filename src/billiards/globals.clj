@@ -62,3 +62,6 @@
   (if (= color :red)
     :yellow
     :red))
+
+(defn remaining-balls [color]
+   (count (filter #(= color (:color @%)) @balls)))

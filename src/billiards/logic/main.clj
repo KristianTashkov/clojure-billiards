@@ -22,11 +22,11 @@
 
 (defn pocket-black-ball [ball]
   (let [player (if @player-one-turn player-one-pocketed player-two-pocketed)
-        color (if @player-one-turn player-one-color player-two-color)]
+        color (if @player-one-turn @player-one-color @player-two-color)]
     (swap! player conj :black)
     (if (or
           (= color :none)
-          (pos? (count (filter #(= (:color %) color) @balls))))
+          (pos? (remaining-balls color)))
       (win (not @player-one-turn))
       (win @player-one-turn))))
 
@@ -71,7 +71,7 @@
   (when-not (or @hit-border @pocketed-ball)
     (reset! commited-foul true))
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
-    (when (and (not= color :none) (not= @first-collision color))
+    (when (and (not= color :none) (pos? (remaining-balls color)) (not= @first-collision color))
       (reset! commited-foul true)))
   (when (or @commited-foul (not @pocketed-ball))
     (swap! player-one-turn #(not %)))
