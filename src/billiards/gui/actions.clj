@@ -22,7 +22,10 @@
       (alter ball update-in [:speed] (fn [old] (/ (* ball-max-power @cue-power) 100)))
       (alter ball update-in [:dirx] (fn [old] dirX))
       (alter ball update-in [:diry] (fn [old] dirY))))
-  (turn))
+  (turn)
+  (when-not (zero? @game-ended)
+    (seesaw.core/alert (format "Player %d won!", (if (= @game-ended 1) 1 2)))
+    (reset! is-playing false)))
 
 (defn start-shooting []
   (reset! is-shooting true)

@@ -3,9 +3,6 @@
     [billiards.globals]
     [billiards.physics.ball_physics]))
 
-(defn win [player-one]
-  (reset! game-ended (if player-one 1 -1)))
-
 (defn step []
   (doseq [ball @balls]
     (move-ball ball)
@@ -21,14 +18,8 @@
   (reset! commited-foul true))
 
 (defn pocket-black-ball [ball]
-  (let [player (if @player-one-turn player-one-pocketed player-two-pocketed)
-        color (if @player-one-turn @player-one-color @player-two-color)]
-    (swap! player conj :black)
-    (if (or
-          (= color :none)
-          (pos? (remaining-balls color)))
-      (win (not @player-one-turn))
-      (win @player-one-turn))))
+  (let [player (if @player-one-turn player-one-pocketed player-two-pocketed)]
+    (swap! player conj :black)))
 
 (defn pocket-colored-ball [ball]
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
@@ -42,7 +33,8 @@
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
     (if (= color (:color @ball))
       (reset! pocketed-ball true)
-      (reset! commited-foul true))))
+      (when @players-colors-decided
+        (reset! commited-foul true)))))
 
 (defn pocket-ball [ball]
   (dosync
@@ -65,14 +57,30 @@
     (when (collision-borders-ball? ball)
       (reset! hit-border true))))
 
+(defn win [player-one]
+  (reset! game-ended (if player-one 1 -1)))
+
+(defn pocketed-black []
+  (let [player (if @player-one-turn player-one-pocketed player-two-pocketed)
+        color (if @player-one-turn @player-one-color @player-two-color)]
+    (if (or
+          (= color :none)
+          (pos? (remaining-balls color)))
+      (win (not @player-one-turn))
+      (win @player-one-turn))))
+
 (defn check-rules []
+  (when (= 0 (remaining-balls :black))
+    (pocketed-black))
   (when-not @first-collision
     (reset! commited-foul true))
   (when-not (or @hit-border @pocketed-ball)
     (reset! commited-foul true))
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
-    (when (and (not= color :none) (pos? (remaining-balls color)) (not= @first-collision color))
+    (when (and @players-colors-decided (not= color :none) (pos? (remaining-balls color)) (not= @first-collision color))
       (reset! commited-foul true)))
+  (when (not= @player-one-color :none)
+    (reset! players-colors-decided true))
   (when (or @commited-foul (not @pocketed-ball))
     (swap! player-one-turn #(not %)))
   (when @commited-foul
@@ -85,8 +93,6 @@
                           :white))))
   (reset! is-playing true))
 
-(defn end-game [])
-
 (defn turn []
   (reset! commited-foul false)
   (reset! pocketed-ball false)
@@ -96,6 +102,6 @@
     (step)
     (collisions)
     (Thread/sleep 3))
-  (if (zero? @game-ended)
-    (check-rules)
-    (end-game)))
+  (check-rules)
+  (when (zero? @game-ended)
+    (reset! is-playing true)))

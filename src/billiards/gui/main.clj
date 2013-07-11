@@ -165,4 +165,5 @@
     (native!)
     (config! frame :content (make-panel))
     (show! frame)
-    (start-painting-thread frame)))
+    (start-painting-thread frame)
+    "Have fun playing!"))

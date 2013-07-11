@@ -16,6 +16,7 @@
 (def player-two-pocketed (atom []))
 (def player-one-color (atom :none))
 (def player-two-color (atom :none))
+(def players-colors-decided (atom false))
 (def commited-foul (atom false))
 (def pocketed-ball (atom false))
 (def hit-border (atom false))
@@ -64,4 +65,4 @@
     :red))
 
 (defn remaining-balls [color]
-   (count (filter #(= color (:color @%)) @balls)))
+  (count (filter #(= color (:color @%)) @balls)))
