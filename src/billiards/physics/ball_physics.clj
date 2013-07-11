@@ -54,11 +54,12 @@
           (alter ball update-in [:y] #(+ % (:diry @ball)))
           false)))))
 
-(defn collision-borders-ball [ball]
+(defn collision-borders-ball? [ball]
   (let [break-token (atom false)]
     (doseq [border @borders]
       (when (not @break-token)
-        (reset! break-token (collision-border-ball ball border))))))
+        (reset! break-token (collision-border-ball ball border))))
+    @break-token))
 
 (defn fix-position [ball1 ball2]
   (let [dir (normalize-vector [(- (:x @ball2) (:x @ball1)) (- (:y @ball2) (:y @ball1))])
@@ -94,10 +95,11 @@
     (apply-direction ball1 new-direction-1 speed1)
     (apply-direction ball2 new-direction-2 speed2)))
 
-(defn collision-ball-ball [[ball1 ball2]]
+(defn collision-ball-ball? [[ball1 ball2]]
   (when (circle-collision-circle? [(:x @ball1) (:y @ball1) ball-size] [(:x @ball2) (:y @ball2) ball-size])
     (fix-position ball1 ball2)
-    (calculate-new-direction ball2 ball1)))
+    (calculate-new-direction ball2 ball1)
+    true))
 
 (defn apply-friction-ball [ball]
   (dosync

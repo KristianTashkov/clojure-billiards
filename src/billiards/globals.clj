@@ -16,6 +16,11 @@
 (def player-two-pocketed (atom []))
 (def player-one-color (atom :none))
 (def player-two-color (atom :none))
+(def commited-foul (atom false))
+(def pocketed-ball (atom false))
+(def hit-border (atom false))
+(def first-collision (atom nil))
+(def game-ended (atom 0))
 
 (def window-width 800.0)
 (def window-height 600.0)
@@ -54,6 +59,6 @@
   (first (filter #(= :white (:color @%)) @balls)))
 
 (defn other-color-ball [color]
-   (if (= color :red)
-      :yellow
-      :red))
+  (if (= color :red)
+    :yellow
+    :red))

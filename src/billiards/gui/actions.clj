@@ -22,8 +22,7 @@
       (alter ball update-in [:speed] (fn [old] (/ (* ball-max-power @cue-power) 100)))
       (alter ball update-in [:dirx] (fn [old] dirX))
       (alter ball update-in [:diry] (fn [old] dirY))))
-  (turn)
-  (reset! is-playing true))
+  (turn))
 
 (defn start-shooting []
   (reset! is-shooting true)
