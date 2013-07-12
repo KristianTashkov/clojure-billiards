@@ -50,7 +50,7 @@
                                    [(:x @ball) (:y @ball) ball-size])))
       (reset! is-free-ball false))))
 
-(defn mouse-released [event]
+(defn left-button-clicked []
   (when @is-playing
     (if @is-free-ball
       (place-free-ball)
@@ -60,6 +60,17 @@
             (shoot)
             (reset! is-shooting false))
           (start-shooting))))))
+
+(defn right-button-clicked []
+  (when (and @is-playing @is-shooting)
+    (reset! is-shooting false)
+    (reset! cue-power 0)))
+
+(defn mouse-released [event]
+  (let [button (.getButton event)]
+    (case button
+      1 (left-button-clicked)
+      3 (right-button-clicked))))
 
 (defn adjust-cue [mousex mousey white-ball]
   (let [dir (subtract-pair [mousex mousey] [(+ board-start-x (:x @white-ball)) (+ board-start-y (:y @white-ball))])]
