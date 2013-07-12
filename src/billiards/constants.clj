@@ -9,7 +9,7 @@
 (def outside-border-size 22)
 (def ball-size 10.0)
 (def pocket-size 20)
-(def ball-max-speed 15.0)
+(def ball-max-speed 12.5)
 (def ball-max-power 6.5)
 (def cushion-effect 0.85)
 (def friction-counter-start 2)

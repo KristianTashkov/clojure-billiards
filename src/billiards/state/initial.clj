@@ -18,11 +18,11 @@
     [[ax ay] [bx by] [cx cy] [dx dy]]))
 
 (defn get-short-side-border-points [startx starty direction]
-  (let [diry (* corner-pocket-angle-percent border-size)
+  (let [dir-y (* corner-pocket-angle-percent border-size)
         [ax ay] [startx starty]
         [dx dy] [startx (+ starty short-side-length)]
-        [bx by] [(+ ax (* direction border-size)) (+ ay diry)]
-        [cx cy] [bx (- dy diry)]]
+        [bx by] [(+ ax (* direction border-size)) (+ ay dir-y)]
+        [cx cy] [bx (- dy dir-y)]]
     [[ax ay] [bx by] [cx cy] [dx dy]]))
 
 (defn get-border-points []
@@ -45,7 +45,7 @@
 (defn create-border [start end]
   (swap! borders conj {:start start
                        :end end
-                       :normal (normalize-vector (get-perp-of-vector (sub-vect start end)))}))
+                       :normal (normalize-vect (get-perpendicular-of-vect (subtract-pair start end)))}))
 
 (defn generate-borders []
   (loop [[a b c d] (take 4 @border-points) other (take-last (- (count @border-points) 4) @border-points)]

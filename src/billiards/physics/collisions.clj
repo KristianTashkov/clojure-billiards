@@ -12,20 +12,20 @@
   (some #{true} (for [border @borders]
                   (collision-border-ball-check? ball border))))
 
-(defn right-border? [ball [new-dirx new-diry]]
+(defn right-border? [ball [new-dir-x new-dir-y]]
   (dosync
-    (alter ball update-in [:x] #(+ % new-dirx))
-    (alter ball update-in [:y] #(+ % new-diry)))
+    (alter ball update-in [:x] #(+ % new-dir-x))
+    (alter ball update-in [:y] #(+ % new-dir-y)))
   (let [result (collision-borders-ball-check? ball)]
     (dosync
-      (alter ball update-in [:x] #(- % new-dirx))
-      (alter ball update-in [:y] #(- % new-diry)))
+      (alter ball update-in [:x] #(- % new-dir-x))
+      (alter ball update-in [:y] #(- % new-dir-y)))
     (not result)))
 
 (defn collision-border-ball [ball border]
   (when (collision-border-ball-check? ball border)
-    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
-          [reverse-dir-x reverse-dir-y] (product-vector-scalar [(:dirx @ball) (:diry @ball)] -1)]
+    (let [new-dir (reflect-vect-from-normal [(:dir-x @ball) (:dir-y @ball)] (:normal border))
+          [reverse-dir-x reverse-dir-y] (product-vect-scalar [(:dir-x @ball) (:dir-y @ball)] -1)]
       (while (collision-borders-ball-check? ball)
         (dosync
           (alter ball update-in [:x] #(+ % reverse-dir-x))
@@ -35,8 +35,8 @@
           (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
           true)
         (dosync
-          (alter ball update-in [:x] #(+ % (:dirx @ball)))
-          (alter ball update-in [:y] #(+ % (:diry @ball)))
+          (alter ball update-in [:x] #(+ % (:dir-x @ball)))
+          (alter ball update-in [:y] #(+ % (:dir-y @ball)))
           false)))))
 
 (defn collision-borders-ball? [ball]

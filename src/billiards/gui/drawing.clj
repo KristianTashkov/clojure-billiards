@@ -9,11 +9,11 @@
     [billiards.utilities]))
 
 (defn polygon-rectangle-from-middle-points [a b vect width]
-  (let [distVect (product-vector-scalar vect width)
-        point1 (sum-pair a distVect)
-        point2 (sum-pair a (reverse-vector distVect))
-        point3 (sum-pair b (reverse-vector distVect))
-        point4 (sum-pair b distVect)]
+  (let [dist-vect (product-vect-scalar vect width)
+        point1 (sum-pair a dist-vect)
+        point2 (sum-pair a (reverse-vect dist-vect))
+        point3 (sum-pair b (reverse-vect dist-vect))
+        point4 (sum-pair b dist-vect)]
     (polygon point1 point2 point3 point4)))
 
 (defn draw-borders [g]
@@ -46,14 +46,14 @@
 
 (defn draw-cue [g]
   (let [ball (get-white-ball)
-        ballX (+ board-start-x (:x @ball))
-        ballY (+ board-start-y (:y @ball))
-        dir (get-perp-of-vector (get-vector-from-angle @cue-angle))
-        tip (get-circle-point-from-angle [ballX ballY] (+ 3 ball-size @cue-power) @cue-angle)
-        tipEnd (get-circle-point-from-angle [ballX ballY] (+ 10 (+ 3 ball-size @cue-power)) @cue-angle)
-        cueEnd (get-circle-point-from-angle [ballX ballY] (+ 250 (+ 3 ball-size @cue-power)) @cue-angle)]
-    (draw g (polygon-rectangle-from-middle-points tip tipEnd dir 5) (style :background :white))
-    (draw g (polygon-rectangle-from-middle-points tipEnd cueEnd dir 5) (style :background :darkgray))))
+        ball-x (+ board-start-x (:x @ball))
+        ball-y (+ board-start-y (:y @ball))
+        dir (get-perpendicular-of-vect (get-vect-from-angle @cue-angle))
+        tip (get-circle-point-from-angle [ball-x ball-y] (+ 3 ball-size @cue-power) @cue-angle)
+        tip-end (get-circle-point-from-angle [ball-x ball-y] (+ 10 (+ 3 ball-size @cue-power)) @cue-angle)
+        cue-end (get-circle-point-from-angle [ball-x ball-y] (+ 250 (+ 3 ball-size @cue-power)) @cue-angle)]
+    (draw g (polygon-rectangle-from-middle-points tip tip-end dir 5) (style :background :white))
+    (draw g (polygon-rectangle-from-middle-points tip-end cue-end dir 5) (style :background :darkgray))))
 
 (defn draw-balls [g]
   (doseq [ball @balls]

@@ -23,12 +23,12 @@
 (defn shoot []
   (reset! is-playing false)
   (let [ball (get-white-ball)
-        dir (get-vector-from-angle @cue-angle)
-        [dirX dirY] (normalize-vector dir)]
+        dir (get-vect-from-angle @cue-angle)
+        [dir-x dir-y] (normalize-vect dir)]
     (dosync
       (alter ball update-in [:speed] (fn [old] (/ (* ball-max-power @cue-power) 100)))
-      (alter ball update-in [:dirx] (fn [old] dirX))
-      (alter ball update-in [:diry] (fn [old] dirY))))
+      (alter ball update-in [:dir-x] (fn [old] dir-x))
+      (alter ball update-in [:dir-y] (fn [old] dir-y))))
   (turn)
   (when-not (zero? @game-ended)
     (seesaw.core/alert (format "Player %d won!", (if (= @game-ended 1) 1 2)))
@@ -62,8 +62,8 @@
           (start-shooting))))))
 
 (defn adjust-cue [mousex mousey white-ball]
-  (let [dir (sub-vect [mousex mousey] [(+ board-start-x (:x @white-ball)) (+ board-start-y (:y @white-ball))])]
-    (reset! cue-angle (get-angle-from-vector dir))))
+  (let [dir (subtract-pair [mousex mousey] [(+ board-start-x (:x @white-ball)) (+ board-start-y (:y @white-ball))])]
+    (reset! cue-angle (get-angle-from-vect dir))))
 
 (defn adjust-ball [mousex mousey white-ball]
   (dosync
