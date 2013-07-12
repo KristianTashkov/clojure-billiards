@@ -15,7 +15,7 @@
           (= color :none)
           (pos? (remaining-balls color)))
       (win (not @player-one-turn))
-      (win @player-one-turn))))
+      (win (if @commited-foul (not @player-one-turn) @player-one-turn)))))
 
 (defn check-first-collision-color []
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
@@ -46,11 +46,11 @@
     (reset! players-colors-decided true)))
 
 (defn check-rules []
-  (check-pocketed-black)
   (check-no-ball-hit)
   (check-no-border-hit)
   (check-first-collision-color)
   (update-colors-decided)
+  (check-pocketed-black)
   (when (or @commited-foul (not @pocketed-ball))
     (swap! player-one-turn #(not %)))
   (when @commited-foul
