@@ -1,9 +1,16 @@
 (ns billiards.gui.actions
   (:use
     [seesaw mouse]
-    [billiards.globals]
+    [billiards.constants]
+    [billiards.state.global]
+    [billiards.state.board]
+    [billiards.state.gui]
+    [billiards.state.initial :only [reset-game]]
     [billiards.physics.geometry]
-    [billiards.logic.main :only [turn]]))
+    [billiards.logic.main :only [turn]]
+    [billiards.utilities]))
+
+(def is-shooting (atom false))
 
 (defn change-power [change]
   (swap! cue-power (fn [old]
@@ -25,7 +32,7 @@
   (turn)
   (when-not (zero? @game-ended)
     (seesaw.core/alert (format "Player %d won!", (if (= @game-ended 1) 1 2)))
-    (reset! is-playing false)))
+    (reset-game)))
 
 (defn start-shooting []
   (reset! is-shooting true)

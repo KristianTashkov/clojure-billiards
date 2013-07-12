@@ -1,7 +1,7 @@
 (ns billiards.physics.ball_physics
   (:use
-    [billiards.globals]
-    [billiards.physics.geometry]))
+    [billiards.physics.geometry]
+    [billiards.constants]))
 
 (defn apply-direction [ball [dirx diry] speed]
   (dosync
@@ -20,47 +20,6 @@
           (alter ball update-in [:y] #(+ % speedy)))
         (alter ball update-in [:speed] (fn [x] 0))))))
 
-(defn collision-border-ball-check? [ball border]
-  (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size]))
-
-(defn collision-borders-ball-check? [ball]
-  (some #{true} (for [border @borders]
-                  (collision-border-ball-check? ball border))))
-
-(defn right-border? [ball [new-dirx new-diry]]
-  (dosync
-    (alter ball update-in [:x] #(+ % new-dirx))
-    (alter ball update-in [:y] #(+ % new-diry)))
-  (let [result (collision-borders-ball-check? ball)]
-    (dosync
-      (alter ball update-in [:x] #(- % new-dirx))
-      (alter ball update-in [:y] #(- % new-diry)))
-    (not result)))
-
-(defn collision-border-ball [ball border]
-  (when (collision-border-ball-check? ball border)
-    (let [new-dir (reflect-vector-from-normal [(:dirx @ball) (:diry @ball)] (:normal border))
-          [reverse-dir-x reverse-dir-y] (product-vector-scalar [(:dirx @ball) (:diry @ball)] -1)]
-      (while (collision-borders-ball-check? ball)
-        (dosync
-          (alter ball update-in [:x] #(+ % reverse-dir-x))
-          (alter ball update-in [:y] #(+ % reverse-dir-y))))
-      (if (right-border? ball new-dir)
-        (do
-          (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
-          true)
-        (dosync
-          (alter ball update-in [:x] #(+ % (:dirx @ball)))
-          (alter ball update-in [:y] #(+ % (:diry @ball)))
-          false)))))
-
-(defn collision-borders-ball? [ball]
-  (let [break-token (atom false)]
-    (doseq [border @borders]
-      (when (not @break-token)
-        (reset! break-token (collision-border-ball ball border))))
-    @break-token))
-
 (defn fix-position [ball1 ball2]
   (let [dir (normalize-vector [(- (:x @ball2) (:x @ball1)) (- (:y @ball2) (:y @ball1))])
         distance (distance-point-to-point [(:x @ball1) (:y @ball1)] [(:x @ball2) (:y @ball2)])
@@ -77,7 +36,7 @@
       (alter ball2 update-in [:x] (fn [x] (first newPosition2)))
       (alter ball2 update-in [:y] (fn [x] (second newPosition2))))))
 
-(defn calculate-new-direction[ball1 ball2]
+(defn calculate-new-direction [ball1 ball2]
   (let [v1 (product-vector-scalar [(:dirx @ball1) (:diry @ball1)] (:speed @ball1))
         v2 (product-vector-scalar [(:dirx @ball2) (:diry @ball2)] (:speed @ball2))
         normal (normalize-vector [(- (:x @ball1) (:x @ball2)) (- (:y @ball1) (:y @ball2))])
@@ -95,12 +54,6 @@
     (apply-direction ball1 new-direction-1 speed1)
     (apply-direction ball2 new-direction-2 speed2)))
 
-(defn collision-ball-ball? [[ball1 ball2]]
-  (when (circle-collision-circle? [(:x @ball1) (:y @ball1) ball-size] [(:x @ball2) (:y @ball2) ball-size])
-    (fix-position ball1 ball2)
-    (calculate-new-direction ball2 ball1)
-    true))
-
 (defn apply-friction-ball [ball]
   (dosync
     (if (zero? (:friction-counter (ensure ball)))
@@ -108,7 +61,3 @@
         (alter ball update-in [:friction-counter] (fn [x] friction-counter-start))
         (alter ball update-in [:speed] (fn [x] (- x friction-step))))
       (alter ball update-in [:friction-counter] dec))))
-
-(defn collision-ball-pocket? [ball pocket]
-  (let [distance (distance-point-to-point [(:x @ball) (:y @ball)] pocket)]
-    (<= distance pocket-size)))
