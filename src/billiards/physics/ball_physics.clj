@@ -1,13 +1,8 @@
 (ns billiards.physics.ball_physics
   (:use
     [billiards.physics.geometry]
-    [billiards.constants]))
-
-(defn apply-direction [ball [dir-x dir-y] speed]
-  (dosync
-    (alter ball update-in [:dir-x] (fn [x] dir-x))
-    (alter ball update-in [:dir-y] (fn [x] dir-y))
-    (alter ball update-in [:speed] (fn [x] speed))))
+    [billiards.constants]
+    [billiards.utilities :only [apply-direction-ball]]))
 
 (defn move-ball [ball]
   (let [speed (min ball-max-speed (:speed @ball))
@@ -18,18 +13,18 @@
         (do
           (alter ball update-in [:x] #(+ % speedx))
           (alter ball update-in [:y] #(+ % speedy)))
-        (alter ball update-in [:speed] (fn [x] 0))))))
+        (alter ball update-in [:speed] (fn [x] 0.0))))))
 
 (defn fix-position [ball1 ball2]
   (let [dir (normalize-vect [(- (:x @ball2) (:x @ball1)) (- (:y @ball2) (:y @ball1))])
         distance (distance-point-to-point [(:x @ball1) (:y @ball1)] [(:x @ball2) (:y @ball2)])
         change-vect (product-vect-scalar dir (/ (- (* 2 ball-size) distance) 2))
         new-position1 (sum-pair
-                       [(:x @ball1) (:y @ball1)]
-                       (reverse-vect change-vect))
+                        [(:x @ball1) (:y @ball1)]
+                        (reverse-vect change-vect))
         new-position2 (sum-pair
-                       [(:x @ball2) (:y @ball2)]
-                       change-vect)]
+                        [(:x @ball2) (:y @ball2)]
+                        change-vect)]
     (dosync
       (alter ball1 update-in [:x] (fn [x] (first new-position1)))
       (alter ball1 update-in [:y] (fn [x] (second new-position1)))
@@ -51,8 +46,8 @@
         speed2 (vect-length new-direction-2)
         new-direction-1 (normalize-vect new-direction-1)
         new-direction-2 (normalize-vect new-direction-2)]
-    (apply-direction ball1 new-direction-1 speed1)
-    (apply-direction ball2 new-direction-2 speed2)))
+    (apply-direction-ball ball1 new-direction-1 speed1)
+    (apply-direction-ball ball2 new-direction-2 speed2)))
 
 (defn apply-friction-ball [ball]
   (dosync

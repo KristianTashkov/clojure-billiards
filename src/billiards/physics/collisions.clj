@@ -3,14 +3,15 @@
     [billiards.state.board :only [borders]]
     [billiards.physics.geometry]
     [billiards.physics.ball_physics]
-    [billiards.constants]))
+    [billiards.constants]
+    [billiards.utilities :only [apply-direction-ball]]))
 
-(defn collision-border-ball-check? [ball border]
+(defn collision-border-ball-check? [border ball]
   (segment-collision-circle? (:start border) (:end border) [[(:x @ball) (:y @ball)] ball-size]))
 
 (defn collision-borders-ball-check? [ball]
   (some #{true} (for [border @borders]
-                  (collision-border-ball-check? ball border))))
+                  (collision-border-ball-check? border ball))))
 
 (defn right-border? [ball [new-dir-x new-dir-y]]
   (dosync
@@ -22,8 +23,8 @@
       (alter ball update-in [:y] #(- % new-dir-y)))
     (not result)))
 
-(defn collision-border-ball [ball border]
-  (when (collision-border-ball-check? ball border)
+(defn collision-border-ball? [border ball]
+  (when (collision-border-ball-check? border ball)
     (let [new-dir (reflect-vect-from-normal [(:dir-x @ball) (:dir-y @ball)] (:normal border))
           [reverse-dir-x reverse-dir-y] (product-vect-scalar [(:dir-x @ball) (:dir-y @ball)] -1)]
       (while (collision-borders-ball-check? ball)
@@ -32,7 +33,7 @@
           (alter ball update-in [:y] #(+ % reverse-dir-y))))
       (if (right-border? ball new-dir)
         (do
-          (apply-direction ball new-dir (* (:speed @ball) cushion-effect))
+          (apply-direction-ball ball new-dir (* (:speed @ball) cushion-effect))
           true)
         (dosync
           (alter ball update-in [:x] #(+ % (:dir-x @ball)))
@@ -43,7 +44,7 @@
   (let [break-token (atom false)]
     (doseq [border @borders]
       (when (not @break-token)
-        (reset! break-token (collision-border-ball ball border))))
+        (reset! break-token (collision-border-ball? border ball))))
     @break-token))
 
 (defn collision-ball-ball? [[ball1 ball2]]

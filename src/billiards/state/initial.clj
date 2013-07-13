@@ -6,7 +6,7 @@
     [billiards.state.gui :only [reset-gui]]
     [billiards.constants]
     [billiards.physics.geometry]
-    [billiards.utilities :only [create-ball]]))
+    [billiards.utilities :only [create-ball create-border]]))
 
 (defn get-long-side-border-points [startx starty direction is-left]
   (let [left-x (* (if is-left corner-pocket-angle-percent middle-pocket-angle-percent) border-size)
@@ -42,17 +42,12 @@
    [(/ board-width 2) (+ (- board-height board-padding) (* pocket-size 2/3))]
    [(- board-width board-padding) (- board-height board-padding)]])
 
-(defn create-border [start end]
-  (swap! borders conj {:start start
-                       :end end
-                       :normal (normalize-vect (get-perpendicular-of-vect (subtract-pair start end)))}))
-
 (defn generate-borders []
   (loop [[a b c d] (take 4 @border-points) other (take-last (- (count @border-points) 4) @border-points)]
     (when (and a b c d)
-      (create-border a b)
-      (create-border b c)
-      (create-border c d)
+      (swap! borders conj (create-border a b))
+      (swap! borders conj (create-border b c))
+      (swap! borders conj (create-border c d))
       (recur (take 4 other) (take-last (- (count other) 4) other)))))
 
 (defn get-ball-color [row number]

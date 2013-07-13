@@ -1,7 +1,6 @@
-(ns billiards.physics_tests
+(ns billiards.geometry_tests
   (:use
     [clojure.test]
-    [billiards.physics.ball_physics]
     [billiards.physics.geometry]))
 
 (deftest closest-point-segment-point-test
@@ -45,4 +44,13 @@
     (is (= (reflect-vect-from-normal [1 1] [0 1]) (normalize-vect [1 -1])))
     (is (= (reflect-vect-from-normal [0 1] [0 1]) (normalize-vect [0 -1])))
     (is (= (reflect-vect-from-normal [1 1] [0 -1]) (normalize-vect [1 -1])))))
+
+(deftest coerce-number-in-range-test
+  (testing "Coercing number in range"
+    (is (= (coerce-number-in-range 15 10 20) 15))
+    (is (= (coerce-number-in-range 30 10 20) 20))
+    (is (= (coerce-number-in-range 5 10 20) 10))
+    (is (= (coerce-number-in-range 0 -10 10) 0))
+    (is (= (coerce-number-in-range -20 -10 10) -10))))
+
 

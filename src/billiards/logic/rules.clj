@@ -19,22 +19,21 @@
 
 (defn check-first-collision-color []
   (let [color (if @player-one-turn @player-one-color @player-two-color)]
-    (when (and
-            @players-colors-decided
-            (not= color :none)
-            (pos? (remaining-balls color))
-            (not= @first-collision color))
-      (println "foul: first collision wrong color")
-      (reset! commited-foul true))))
+    (when @first-collision
+      (if (= @first-collision :black)
+        (when (or (not @players-colors-decided) (pos? (remaining-balls color)))
+          (reset! commited-foul true))
+        (when (and
+                @players-colors-decided
+                (= @first-collision (other-color-ball color)))
+          (reset! commited-foul true))))))
 
 (defn check-no-border-hit []
   (when-not (or @hit-border @pocketed-ball)
-    (println "foul: no border hit")
     (reset! commited-foul true)))
 
 (defn check-no-ball-hit []
   (when-not @first-collision
-    (println "foul: no ball hit")
     (reset! commited-foul true)))
 
 (defn check-pocketed-black []

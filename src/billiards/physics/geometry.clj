@@ -62,9 +62,9 @@
 
 (defn reflect-vect-from-normal [vect normal]
   (normalize-vect (sum-pair vect
-                      (product-vect-scalar
-                        normal
-                        (* -2 (dot-product-vect vect normal))))))
+                    (product-vect-scalar
+                      normal
+                      (* -2 (dot-product-vect vect normal))))))
 
 (defn closest-point-segment-point [a b c]
   (let [segment-vect (subtract-pair b a)
