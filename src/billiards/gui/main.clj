@@ -20,7 +20,7 @@
   (frame :title   "Billiards"
     :size    [window-width :by window-height]
     :resizable? false
-    :on-close :dispose
+    :on-close :exit
     :content (make-panel)))
 
 (defn new-thread-run [action]

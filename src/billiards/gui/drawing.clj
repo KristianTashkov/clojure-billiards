@@ -108,6 +108,12 @@
   (let [starting-x-one (+ (- board-start-x outside-border-size) ball-size)
         starting-x-two (+ starting-x-one board-width outside-border-size)
         starting-y (- board-start-y outside-border-size (* 2 ball-size))]
+    (draw g (rect
+              (- starting-x-one ball-size 5)
+              (- starting-y ball-size 5)
+              (+ board-width outside-border-size (* ball-size 2) 10)
+              (+ (* 2 ball-size) 10))
+      (style :background "#8F9779" :stroke 1 :foreground :black))
     (draw-turn-indicator g starting-x-one starting-y true)
     (draw-turn-indicator g starting-x-two starting-y false)
     (draw-pocketed-balls g (+ starting-x-one (* 4 ball-size)) starting-y true)

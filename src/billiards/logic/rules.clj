@@ -56,4 +56,4 @@
     (reset! is-free-ball true))
   (when-not (get-white-ball)
     (dosync
-      (alter balls conj (create-ball 0 0 :white)))))
+      (alter balls conj (create-ball (/ board-width 2) (/ board-height 2) :white)))))
