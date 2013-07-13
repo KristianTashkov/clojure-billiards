@@ -15,8 +15,8 @@
 (def friction-counter-start 2)
 (def friction 0.015)
 (def friction-step (/ friction friction-counter-start))
-(def corner-pocket-angle-percent 1.5)
-(def middle-pocket-angle-percent 0.7)
+(def corner-pocket-angle-percent 1.35)
+(def middle-pocket-angle-percent 0.65)
 
 (def board-start-x
   (/ (- window-width board-width) 2))

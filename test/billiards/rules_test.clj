@@ -134,6 +134,24 @@
         (collisions))
       (check-rules)
       (is @commited-foul)))
+  (testing "Pocketed two colors when undecided"
+    (reset-rules true)
+    (let [white-ball (create-ball 50 50 :white)
+          red-ball (create-ball -50 50 :red)
+          yellow-ball (create-ball -10 50 :yellow)
+          red-ball (create-ball 10 50 :red)
+          pocket [-50 50]
+          border (create-border [70 20] [70 70])]
+      (dosync
+        (ref-set balls [white-ball yellow-ball red-ball]))
+      (reset! borders [border])
+      (reset! pockets [pocket])
+      (apply-direction-ball white-ball [1.0 0.0] 10)
+      (while (not-every? #((complement pos?) (:speed @%)) @balls)
+        (step)
+        (collisions))
+      (check-rules)
+      (is (not @commited-foul))))
   (testing "Pocketed white ball"
     (reset-rules true)
     (let [white-ball (create-ball 10 50 :white)

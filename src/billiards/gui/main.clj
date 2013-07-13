@@ -7,8 +7,7 @@
     [billiards.constants :only [window-width window-height]]))
 
 (defn redisplay [root]
-  (dosync
-    (config! (select root [:.billiard]) :paint draw-table)))
+  (config! (select root [:.billiard]) :paint draw-table))
 
 (defn make-panel []
   (border-panel
